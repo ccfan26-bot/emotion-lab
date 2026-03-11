@@ -80,7 +80,7 @@ ${event}
     const data = JSON.parse(rawText);
 
     const result =
-      data.output?.[0]?.content?.[0]?.text ||
+      data.choices?.[0]?.message?.content ||
       "生成失败，请检查模型或 API 格式";
 
     return NextResponse.json({ result });
@@ -98,3 +98,4 @@ ${event}
   }
 
 }
+
