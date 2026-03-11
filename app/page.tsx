@@ -8,23 +8,17 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async () => {
-    setError("");
-    setResult("");
-
-    if (event.length < 5) {
-      setError("请描述得更具体一些");
-      return;
-    }
+  const analyze = async () => {
+    if (!event.trim()) return;
 
     setLoading(true);
+    setError("");
+    setResult("");
 
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event }),
       });
 
@@ -35,7 +29,7 @@ export default function Home() {
       } else {
         setResult(data.result);
       }
-    } catch (err) {
+    } catch {
       setError("网络错误");
     }
 
@@ -43,39 +37,48 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow">
-        <h1 className="text-2xl font-bold mb-4">
-          情绪结构实验室
-        </h1>
+    <main className="min-h-screen bg-neutral-50 flex justify-center px-4 py-16">
+      <div className="w-full max-w-2xl">
 
-        <textarea
-          className="w-full border rounded p-3 mb-4"
-          rows={5}
-          placeholder="描述最近让你情绪波动的一件事..."
-          value={event}
-          onChange={(e) => setEvent(e.target.value)}
-        />
+        {/* 标题区域 */}
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            情绪结构实验室
+          </h1>
+          <p className="mt-3 text-neutral-500 text-sm">
+            用结构化方式理解情绪，而不是被情绪控制
+          </p>
+        </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="bg-black text-white px-4 py-2 rounded w-full"
-        >
-          {loading ? "分析中..." : "开始分析"}
-        </button>
+        {/* 输入卡片 */}
+        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 space-y-4">
+          <textarea
+            value={event}
+            onChange={(e) => setEvent(e.target.value)}
+            placeholder="描述最近困扰你的事情..."
+            className="w-full h-40 resize-none rounded-lg border border-neutral-200 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition"
+          />
 
-        {error && (
-          <div className="text-red-500 mt-4">
-            {error}
-          </div>
-        )}
+          <button
+            onClick={analyze}
+            disabled={loading}
+            className="w-full bg-black text-white py-3 rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
+          >
+            {loading ? "分析中..." : "开始分析"}
+          </button>
 
+          {error && (
+            <p className="text-sm text-red-500 text-center">{error}</p>
+          )}
+        </div>
+
+        {/* 结果区域 */}
         {result && (
-          <div className="mt-6 whitespace-pre-wrap border p-4 rounded bg-gray-100">
+          <div className="mt-8 bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 whitespace-pre-wrap text-sm leading-relaxed">
             {result}
           </div>
         )}
+
       </div>
     </main>
   );
