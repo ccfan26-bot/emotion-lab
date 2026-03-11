@@ -46,7 +46,7 @@ ${event}
 `;
 
     // ✅ 调用 Poe API
-    const response = await fetch("https://api.poe.com/v1/messages", {
+    const response = await fetch("https://api.poe.com/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.POE_API_KEY}`,
@@ -96,4 +96,5 @@ ${event}
       { status: 500 }
     );
   }
+
 }
