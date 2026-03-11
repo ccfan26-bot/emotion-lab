@@ -178,16 +178,9 @@ ${currentInput}
         {step === "result" && (
           <section className="space-y-8">
 
-        {result
-          .split(/\n(?=\d️⃣)/)
-          .map((section, index) => (
-            <div
-               key={index}
-               className="bg-white border border-neutral-200 rounded-2xl p-6 text-sm leading-relaxed text-neutral-800"
-            >
-               {section}
-            </div>
-))}
+        <div className="bg-white ...">
+          {result}
+        </div>
 
             {/* 补充区 */}
             <div className="bg-white rounded-2xl border border-neutral-200 p-6 space-y-4">
