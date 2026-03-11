@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  console.log("API KEY:", process.env.POE_API_KEY);
-
   try {
-    const body = await req.json();
-    const { event } = body;
+    const { event } = await req.json();
 
-    if (!event || event.length < 5) {
+    if (!event || event.trim().length < 5) {
       return NextResponse.json(
         { error: "请输入更完整的描述" },
         { status: 400 }
@@ -45,57 +42,40 @@ ${event}
 - 
 `;
 
-    // ✅ 调用 Poe API
-    const response = await fetch("https://api.poe.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.POE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      }),
-    });
-
-    // ✅ 打印原始返回（方便排查）
-    const rawText = await response.text();
-    console.log("POE RAW RESPONSE:", rawText);
+    const response = await fetch(
+      "https://api.poe.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.POE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4.1",
+          messages: [{ role: "user", content: prompt }],
+        }),
+      }
+    );
 
     if (!response.ok) {
       return NextResponse.json(
-        {
-          error: "Poe API 调用失败",
-          detail: rawText,
-        },
+        { error: "模型调用失败" },
         { status: 500 }
       );
     }
 
-    const data = JSON.parse(rawText);
+    const data = await response.json();
 
     const result =
       data.choices?.[0]?.message?.content ||
-      "生成失败，请检查模型或 API 格式";
+      "生成失败，请重试";
 
     return NextResponse.json({ result });
 
-  } catch (error: any) {
-    console.error("SERVER ERROR:", error);
-
+  } catch {
     return NextResponse.json(
-      {
-        error: "服务器内部错误",
-        detail: error?.message,
-      },
+      { error: "服务器内部错误" },
       { status: 500 }
     );
   }
-
 }
-
