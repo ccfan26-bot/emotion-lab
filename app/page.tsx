@@ -7,6 +7,8 @@ export default function Home() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [refineMode, setRefineMode] = useState(false);
+  const [originalEvent, setOriginalEvent] = useState("");
 
   const analyze = async () => {
     if (!event.trim()) return;
@@ -19,7 +21,22 @@ export default function Home() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event }),
+        body: JSON.stringify({
+          event: refineMode
+            ? `
+原始描述：
+${originalEvent}
+
+这是你刚刚的分析结果：
+${result}
+
+用户补充说明：
+${event}
+
+请结合补充说明，重新进行修正分析。
+`
+            : event,
+        }),
       });
 
       const data = await res.json();
@@ -27,7 +44,12 @@ export default function Home() {
       if (!res.ok) {
         setError(data.error || "请求失败");
       } else {
+        if (!refineMode) {
+          setOriginalEvent(event);
+        }
         setResult(data.result);
+        setEvent("");
+        setRefineMode(false);
       }
     } catch {
       setError("网络错误");
@@ -40,7 +62,7 @@ export default function Home() {
     <main className="min-h-screen bg-neutral-50 flex justify-center px-4 py-16">
       <div className="w-full max-w-2xl">
 
-        {/* 标题区域 */}
+        {/* 标题 */}
         <div className="mb-10 text-center">
           <h1 className="text-3xl font-semibold tracking-tight">
             情绪结构实验室
@@ -52,10 +74,15 @@ export default function Home() {
 
         {/* 输入卡片 */}
         <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 space-y-4">
+
           <textarea
             value={event}
             onChange={(e) => setEvent(e.target.value)}
-            placeholder="描述最近困扰你的事情..."
+            placeholder={
+              refineMode
+                ? "补充说明哪里理解有偏差..."
+                : "描述最近困扰你的事情..."
+            }
             className="w-full h-40 resize-none rounded-lg border border-neutral-200 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition"
           />
 
@@ -64,7 +91,11 @@ export default function Home() {
             disabled={loading}
             className="w-full bg-black text-white py-3 rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
           >
-            {loading ? "分析中..." : "开始分析"}
+            {loading
+              ? "分析中..."
+              : refineMode
+              ? "重新分析"
+              : "开始分析"}
           </button>
 
           {error && (
@@ -74,8 +105,25 @@ export default function Home() {
 
         {/* 结果区域 */}
         {result && (
-          <div className="mt-8 bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 whitespace-pre-wrap text-sm leading-relaxed">
-            {result}
+          <div className="mt-8 space-y-4">
+
+            <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 whitespace-pre-wrap text-sm leading-relaxed">
+              {result}
+            </div>
+
+            {/* 修正按钮 */}
+            <div className="text-center">
+              <button
+                onClick={() => {
+                  setRefineMode(true);
+                  setEvent("");
+                }}
+                className="text-sm text-neutral-500 hover:text-black underline transition"
+              >
+                理解有偏差？补充说明
+              </button>
+            </div>
+
           </div>
         )}
 
