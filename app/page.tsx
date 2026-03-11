@@ -178,9 +178,9 @@ ${currentInput}
         {step === "result" && (
           <section className="space-y-8">
 
-        <div className="bg-white ...">
-          {result}
-        </div>
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 whitespace-pre-wrap text-sm leading-relaxed text-neutral-800">
+              {result}
+            </div>
 
             {/* 补充区 */}
             <div className="bg-white rounded-2xl border border-neutral-200 p-6 space-y-4">
