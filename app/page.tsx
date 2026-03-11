@@ -7,11 +7,11 @@ type Step = "input" | "clarify" | "result";
 export default function Home() {
   const [step, setStep] = useState<Step>("input");
 
-  const [context, setContext] = useState(""); // ✅ 累积上下文
+  const [context, setContext] = useState("");
   const [currentInput, setCurrentInput] = useState("");
 
   const [questions, setQuestions] = useState<string[]>([]);
-  const [answers, setAnswers] = useState<string[]>(["", ""]);
+  const [answers, setAnswers] = useState<string[]>([]);
 
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,7 +48,7 @@ export default function Home() {
           );
 
         setQuestions(qs);
-        setAnswers(["", ""]);
+        setAnswers(new Array(qs.length).fill(""));
         setStep("clarify");
       } else {
         setResult(text);
@@ -61,7 +61,7 @@ export default function Home() {
     setLoading(false);
   };
 
-  // ✅ 初始提交
+  // ✅ 初始输入
   const handleInitialSubmit = () => {
     if (!currentInput.trim()) return;
 
@@ -71,10 +71,11 @@ ${currentInput}
 `;
 
     setContext(newContext);
+    setCurrentInput("");
     runAnalysis(newContext);
   };
 
-  // ✅ 提交澄清回答
+  // ✅ 澄清提交
   const handleClarifySubmit = () => {
     const clarificationBlock = `
 澄清回答：
@@ -89,7 +90,7 @@ ${questions
     runAnalysis(newContext);
   };
 
-  // ✅ 用户补充信息
+  // ✅ 结果后补充
   const handleRefineSubmit = () => {
     if (!currentInput.trim()) return;
 
@@ -101,53 +102,56 @@ ${currentInput}
     const newContext = context + "\n" + refineBlock;
 
     setContext(newContext);
+    setCurrentInput("");
     runAnalysis(newContext);
   };
 
   return (
-    <main className="min-h-screen bg-neutral-50 flex justify-center px-4 py-16">
-      <div className="w-full max-w-2xl space-y-8">
+    <main className="min-h-screen bg-neutral-50 flex justify-center px-4 py-20">
+      <div className="w-full max-w-2xl space-y-12">
 
-        {/* 标题 */}
-        <div className="text-center">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            情绪结构实验室
+        {/* 标题区 */}
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-semibold tracking-wide text-neutral-900">
+            情绪结构
           </h1>
-          <p className="mt-3 text-neutral-500 text-sm">
-            结构化拆解，而不是情绪发泄
+          <p className="text-sm text-neutral-400">
+            把混乱变成结构
           </p>
         </div>
 
         {/* 输入阶段 */}
         {step === "input" && (
-          <div className="bg-white rounded-2xl p-6 border space-y-4">
+          <section className="bg-white rounded-2xl border border-neutral-200 p-6 space-y-6">
             <textarea
               value={currentInput}
               onChange={(e) => setCurrentInput(e.target.value)}
-              placeholder="描述你的情况..."
-              className="w-full h-40 resize-none rounded-lg border p-4 text-sm"
+              placeholder="描述正在困扰你的事情..."
+              className="w-full h-40 resize-none rounded-lg border border-neutral-200 p-4 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
             />
 
             <button
               onClick={handleInitialSubmit}
               disabled={loading}
-              className="w-full bg-black text-white py-3 rounded-lg"
+              className="w-full bg-neutral-900 text-white py-3 rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
             >
               {loading ? "分析中..." : "开始分析"}
             </button>
-          </div>
+          </section>
         )}
 
         {/* 澄清阶段 */}
         {step === "clarify" && (
-          <div className="bg-white rounded-2xl p-6 border space-y-6">
-            <div className="text-sm text-neutral-600">
-              为了更准确理解，请补充：
+          <section className="bg-white rounded-2xl border border-neutral-200 p-6 space-y-8">
+            <div className="text-sm text-neutral-500">
+              为了更准确理解，请补充以下信息：
             </div>
 
             {questions.map((q, i) => (
-              <div key={i}>
-                <label className="text-sm font-medium">{q}</label>
+              <div key={i} className="space-y-2">
+                <label className="text-sm font-medium text-neutral-800">
+                  {q}
+                </label>
                 <textarea
                   value={answers[i] || ""}
                   onChange={(e) => {
@@ -155,7 +159,7 @@ ${currentInput}
                     updated[i] = e.target.value;
                     setAnswers(updated);
                   }}
-                  className="w-full mt-2 h-24 resize-none rounded-lg border p-3 text-sm"
+                  className="w-full h-24 resize-none rounded-lg border border-neutral-200 p-3 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
                 />
               </div>
             ))}
@@ -163,42 +167,43 @@ ${currentInput}
             <button
               onClick={handleClarifySubmit}
               disabled={loading}
-              className="w-full bg-black text-white py-3 rounded-lg"
+              className="w-full bg-neutral-900 text-white py-3 rounded-lg text-sm font-medium"
             >
               {loading ? "分析中..." : "继续分析"}
             </button>
-          </div>
+          </section>
         )}
 
         {/* 结果阶段 */}
         {step === "result" && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl p-6 border whitespace-pre-wrap text-sm leading-relaxed">
+          <section className="space-y-8">
+
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 whitespace-pre-wrap text-sm leading-relaxed text-neutral-800">
               {result}
             </div>
 
-            {/* 补充 */}
-            <div className="bg-white rounded-2xl p-6 border space-y-4">
-              <div className="text-sm text-neutral-600">
-                还有补充信息吗？
+            {/* 补充区 */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 space-y-4">
+              <div className="text-sm text-neutral-500">
+                还有需要补充的信息吗？
               </div>
 
               <textarea
                 value={currentInput}
                 onChange={(e) => setCurrentInput(e.target.value)}
-                placeholder="补充新的信息..."
-                className="w-full h-24 resize-none rounded-lg border p-3 text-sm"
+                placeholder="补充新的背景、感受或细节..."
+                className="w-full h-24 resize-none rounded-lg border border-neutral-200 p-3 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
               />
 
               <button
                 onClick={handleRefineSubmit}
                 disabled={loading}
-                className="w-full bg-black text-white py-3 rounded-lg"
+                className="w-full bg-neutral-900 text-white py-3 rounded-lg text-sm font-medium"
               >
                 {loading ? "更新中..." : "更新分析"}
               </button>
             </div>
-          </div>
+          </section>
         )}
 
         {error && (
