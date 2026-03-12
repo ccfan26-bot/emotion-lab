@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     if (!event || event.trim().length < 5) {
       return NextResponse.json(
         { error: "请输入更完整的描述" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -54,41 +54,28 @@ ${event}
 - 
 `;
 
-    const response = await fetch(
-      "https://api.poe.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.POE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4.1",
-          messages: [{ role: "user", content: prompt }],
-        }),
-      }
-    );
+    const response = await fetch("https://api.poe.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.POE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4.6",
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: "模型调用失败" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "模型调用失败" }, { status: 500 });
     }
 
     const data = await response.json();
 
-    const result =
-      data.choices?.[0]?.message?.content ||
-      "生成失败，请重试";
+    const result = data.choices?.[0]?.message?.content || "生成失败，请重试";
 
     return NextResponse.json({ result });
-
   } catch {
-    return NextResponse.json(
-      { error: "服务器内部错误" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "服务器内部错误" }, { status: 500 });
   }
 }
-
